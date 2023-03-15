@@ -80,7 +80,7 @@ public class HaiTest extends AppCompatActivity {
             String data = i.getStringExtra("data");
             edtData2.setText(data);
             int inputManage=i.getIntExtra("image",1);
-            imageView.setImageResource(inputManage);
+//            imageView.setImageResource(inputManage);
         }
     }
 

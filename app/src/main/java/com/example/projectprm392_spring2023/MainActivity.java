@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 i.setClass(MainActivity.this, HaiTest.class);
                 String s = edtData.getText().toString();//send to activity 2
                 i.putExtra("data", s);
-                i.putExtra("image", R.drawable.test_img);
+//                i.putExtra("image", R.drawable.test_img);
                 startActivity(i);
 //                startActivityForResult(i, 21);
             }
