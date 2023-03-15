@@ -20,9 +20,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
 
     private void bindingView() {
-        btnEx=findViewById(R.id.GetData);
-        edtData=findViewById(R.id.edtData);
-        imageView=findViewById(R.id.imageView);
+        btnEx = findViewById(R.id.GetData);
+        edtData = findViewById(R.id.edtData);
+        imageView = findViewById(R.id.imageView);
     }
 
     @Override
@@ -34,22 +34,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //to call another activity
-                Intent i=new Intent();
+                Intent i = new Intent();
                 i.setClass(MainActivity.this, HaiTest.class);
-                String s= edtData.getText().toString();//send to activity 2
-                i.putExtra("data",s);
-
-                //for Image
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.id.imageView);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                if(bitmap!=null){
-                    Log.i("message", "vao duoc day ne");
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
-                    i.putExtra("image", byteArray);
-                }
-                Log.i("message", "khong vao duoc day ne");
-                startActivityForResult(i, 21);
+                String s = edtData.getText().toString();//send to activity 2
+                i.putExtra("data", s);
+                i.putExtra("image", R.drawable.test_img);
+                startActivity(i);
+//                startActivityForResult(i, 21);
             }
         });
     }
