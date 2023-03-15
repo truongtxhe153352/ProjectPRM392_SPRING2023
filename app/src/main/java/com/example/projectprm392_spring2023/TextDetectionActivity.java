@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
@@ -25,10 +26,26 @@ import android.widget.Toast;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.vision.v1.AnnotateImageRequest;
+import com.google.cloud.vision.v1.AnnotateImageResponse;
+import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
+import com.google.cloud.vision.v1.Feature;
+import com.google.cloud.vision.v1.Image;
+import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.cloud.vision.v1.ImageAnnotatorSettings;
+import com.google.protobuf.ByteString;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import android.Manifest;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TextDetectionActivity extends AppCompatActivity {
     Button btnCapture;
@@ -42,6 +59,21 @@ public class TextDetectionActivity extends AppCompatActivity {
     private static final int SELECT_IMAGE_CODE = 1;
     private static final int IMAGE_PICK_CAMERA_CODE = 2001;
 
+    private final String credentialString = "{\n" +
+            "  \"type\": \"service_account\",\n" +
+            "  \"project_id\": \"infra-edge-377903\",\n" +
+            "  \"private_key_id\": \"1618ba12daf616fd5c07b4e0a80dc96d7d745818\",\n" +
+            "  \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDfCVKfWnYQl9ei\\nywGczzlNd1pGq5+NszQxPRkNOaTpIdPDot0uWJTHendX9jl/sSwFE3poITbyqUVt\\nFpcV9OhD6WSnkIrPkd1ItFYxwf16i5DBkipnPcl4WNiqkzx0SReocJ0xkPRjaU0b\\n4n/Taz5h1kvag+T6j8IZmZf/azKn70baYj6oic/ytrr1qcAoGmTC8rSqQZmfz+Yu\\ndShcVfDeCLFQjFA7aE3mBWVdKTlSKKGUEO+IMymK5BHNelUp+v4bClgHHPKROn5t\\nHnsQ06ZK5tmPhv/bQ7dURCkM0zjmbN24qnBhI8CBprjp4bpwNXyTTt4x6ulp0e93\\nFMjIoaLXAgMBAAECggEAF4qJs1LTrgyuMKXyFaBfEVN3roiO3rX7hvbxSKQSSUkj\\na5LVJanT36TdfpCj9lu3pGbZ6gPCI6VviS7JOQK7QUUb3/6G/ZcNHuS/SaE1eqnL\\nLaNFNoB0XhotRFPQyGAD+ei+WWz4s/AkDhK/deFBRF0KGeux+isSTFbEjwERkl1M\\niKHBiPlfVfb7spITpK6EjP0jLS3Vdmy80WKWUOfPrcf9FSxtv8qnsw+kVcM4xu57\\n4Da5wmoT6MshdPCR9jDWtB7vPXQ4SxB+kj1hPU+X/f0HkCkS4hX0OlTlFOR5vdR6\\nd10iYFsCHv8r9Wd/ZasMP805Lv9NuyBDRiufB28cgQKBgQD/ytZdASoZZfS1ghNB\\nkswJsrySYx77sQX0p4hlg5Qfm0NjTnX/SgerCZH1AHMOdBFPKsOMn1kOkW+RFeXb\\nemC/IYuYZ5F3AlMwvonmcCE7f3LPEkPSqLKc3hTZz76TIYj4J89jypuiGUpJ6ao2\\n7ijwx1XBdNfuWOhn8wR0V7S4zQKBgQDfN610TcFOKT4cY3w15SoXVNYzqP9iwkwX\\n41HtvvhFtF/YRzZhdxYlBKRP/UujFw/qPl/3MoeQgXwEwsFra/7TnU7byN3GMZzu\\nDK60ApDdKpnt+TFMwoYDjh/viuONAu7XHRugUfDVy/1JVF6dRajMh7lr1HIKeGmv\\n8BIceEwaMwKBgQDcg069qu1SK/UELPjQxO6lRbMPN+hT7s5FldAeQ4qEnONBTzim\\nNnnZ10w+vH5z7VemuiUOq6ioyHQ3zXr09NFGtHKVlmNvB1AUa46SXAQqOLsPDJ3v\\nk4M3fLTY+SE/0d80n41IaDg3TDog8hHNfQ9KU234cvRcA8WHJ5elfJ7N2QKBgQDI\\niJ+m1dftHTY0kNfdH2UCEvBg9tmA4uczqsBG44LuNE7K4ackRrU5SoNHbVqPST++\\nBI14agfKNdmx+TmFBT+o4zEeWMWMsbO3VON6yrdUSlqBpZa5zCRTe1KLhG5Ll6/0\\nx6yzCgpgOGPzhf1+Mz+jh+d3zSMq7uSb8ASFWTmdawKBgHUOopqmwNY14HMkPI2f\\nd5vkPmG6zVHNsqghVia4pIzBt4xrNtBA2PWW70OAoIqBzCZXn1W6AuzOY6hlrOA1\\new47FqV0AiLjmvzQ1lB5k5bm/rH/brgq7ZS6Uugqfr869c89yEAoWTIeuupieN9j\\nnT629z2Naah5XEh05oA2V5MZ\\n-----END PRIVATE KEY-----\\n\",\n" +
+            "  \"client_email\": \"camgpt@infra-edge-377903.iam.gserviceaccount.com\",\n" +
+            "  \"client_id\": \"113930226339496075868\",\n" +
+            "  \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\n" +
+            "  \"token_uri\": \"https://oauth2.googleapis.com/token\",\n" +
+            "  \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\n" +
+            "  \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/camgpt%40infra-edge-377903.iam.gserviceaccount.com\"\n" +
+            "}\n";
+
+    private ImageAnnotatorSettings imageAnnotatorSettings;
+    private ImageAnnotatorClient vision;
 
 
     private void bindingView() {
@@ -87,6 +119,11 @@ public class TextDetectionActivity extends AppCompatActivity {
         setContentView(R.layout.scan_images);
         bindingView();
         bindingAction();
+        try {
+            prepareTextDetection();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -128,9 +165,17 @@ public class TextDetectionActivity extends AppCompatActivity {
                 imageUri = result.getUri();
                 imgView.setImageURI(imageUri);
 
+                // Convert imgView to bitmap
+                Bitmap bitmapImage = null;
+                try {
+                    bitmapImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 // Start text detection
                 TextDetectionTask textDetectionTask = new TextDetectionTask();
-                textDetectionTask.execute();
+                textDetectionTask.execute(bitmapImage);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
@@ -139,8 +184,43 @@ public class TextDetectionActivity extends AppCompatActivity {
 
     }
 
+    private void prepareTextDetection() throws Exception {
+        // Initialize vision
+        if (imageAnnotatorSettings == null) {
+            imageAnnotatorSettings = ImageAnnotatorSettings.newHttpJsonBuilder().setCredentialsProvider(FixedCredentialsProvider.create(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialString.getBytes())))).build();
 
-    class TextDetectionTask extends AsyncTask<Void, Void, Void> {
+        }
+        if (vision == null) {
+            vision = ImageAnnotatorClient.create(imageAnnotatorSettings);
+        }
+    }
+
+    private String detectText(Bitmap bitmapImage) {
+        // Convert Bitmap image to ByteString
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+        byte[] bitMapData = stream.toByteArray();
+        ByteString imgBytes = ByteString.copyFrom(bitMapData);
+
+        // Builds the image annotation request
+        List<AnnotateImageRequest> requests = new ArrayList<>();
+        Image img = Image.newBuilder().setContent(imgBytes).build();
+        Feature feat = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+        AnnotateImageRequest request =
+                AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
+        requests.add(request);
+
+        // Performs label detection on the image file
+        BatchAnnotateImagesResponse response = vision.batchAnnotateImages(requests);
+        List<AnnotateImageResponse> responses = response.getResponsesList();
+
+        // Return full text
+        return responses.get(0).getFullTextAnnotation().getText();
+
+    }
+
+
+    class TextDetectionTask extends AsyncTask<Bitmap, Void, Void> {
         String detectedText;
         ProgressDialog progressDialog;
 
@@ -151,15 +231,19 @@ public class TextDetectionActivity extends AppCompatActivity {
                     "Detecting...");
         }
         @Override
-        protected Void doInBackground(Void... voids) {
-            detectedText = "Here's some detected text";
+        protected Void doInBackground(Bitmap... bitmaps) {
+            detectedText = detectText(bitmaps[0]);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             progressDialog.dismiss();
-            startPromptActivity(detectedText);
+            if (detectedText == "") {
+                Toast.makeText(TextDetectionActivity.this, "No text found, try again!", Toast.LENGTH_LONG).show();
+            } else {
+                startPromptActivity(detectedText);
+            }
         }
     }
 
@@ -172,9 +256,6 @@ public class TextDetectionActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private String detectText(Bitmap bitmapImage) {
-        return "Here's some detected text";
-    }
 
     public void textFind() {
         TextRecognizer textRecognizer = new TextRecognizer.Builder(activity).build();
