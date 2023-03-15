@@ -16,6 +16,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class PromptActivity extends AppCompatActivity {
     private Button btnSave;
     private EditText edtData2;
@@ -66,12 +77,17 @@ public class PromptActivity extends AppCompatActivity {
     }
 
     private void onBtnSaveClick(View view) {
-        // Send a ChatGPTRequest
-        // When successfully, show the ChatGPTActivity screen and have the "Save" note button
-        // Gọi chatGPTTask
-        // Thành công thì startShowAfterScanActivity
+        // Todo: Get current detected text
+        // Todo: Get current prompt
+        // Todo: Generate a new prompt
+
+        // Fake data
+        String prompt = "hello world";
+        String secretKey = "thaiduongdeptrai";
+        ChatGptRequest chatGptRequest = new ChatGptRequest(prompt, secretKey);
+
         AskChatGptTask askChatGptTask = new AskChatGptTask();
-        askChatGptTask.execute();
+        askChatGptTask.execute(chatGptRequest);
 
         String result = edtData2.getText().toString();
         Intent i = new Intent();
@@ -79,9 +95,10 @@ public class PromptActivity extends AppCompatActivity {
         setResult(8, i);
         finish();
     }
-    class AskChatGptTask extends AsyncTask<Void, Void, Void> {
-        String response;
-        ProgressDialog progressDialog;
+    class AskChatGptTask extends AsyncTask<ChatGptRequest, Void, ChatGptResponse> {
+        private static final String API_ENDPOINT = "http://54.169.182.6:3000/conversation";
+        private Gson gson;
+        private ProgressDialog progressDialog;
 
         @Override
         protected void onPreExecute() {
@@ -90,15 +107,60 @@ public class PromptActivity extends AppCompatActivity {
                     "Waiting for response...");
         }
         @Override
-        protected Void doInBackground(Void... voids) {
-            response = "Hello, I'm ChatGPT. Here's my response.";
+        protected ChatGptResponse doInBackground(ChatGptRequest... chatGptRequests) {
+            gson = new Gson();
+            String jsonRequest = gson.toJson(chatGptRequests[0]);
+            try {
+                URL url = new URL(API_ENDPOINT);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(jsonRequest.getBytes());
+                outputStream.flush();
+                outputStream.close();
+
+                int responseCode = connection.getResponseCode();
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    // Read the response data
+                    InputStream inputStream = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line;
+                    StringBuilder response = new StringBuilder();
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    reader.close();
+                    inputStream.close();
+
+                    // Convert the response data from JSON to a Java object
+                    ChatGptResponse responseData = gson.fromJson(response.toString(), ChatGptResponse.class);
+
+                    // Do something with the response data
+                    return responseData;
+                } else {
+                    // Handle error
+                }
+
+                connection.disconnect();
+
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(ChatGptResponse chatGptResponse) {
             progressDialog.dismiss();
-            startResultActivity(response);
+            Toast.makeText(PromptActivity.this, chatGptResponse.getResponse(), Toast.LENGTH_SHORT).show();
+            super.onPostExecute(chatGptResponse);
+            startResultActivity(chatGptResponse.getResponse());
         }
     }
     private void startResultActivity(String response) {
