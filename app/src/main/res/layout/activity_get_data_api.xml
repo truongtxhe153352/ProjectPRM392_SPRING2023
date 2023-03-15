@@ -15,7 +15,7 @@
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.256" />
+        app:layout_constraintVertical_bias="0.217" />
 
     <TextView
         android:layout_width="293dp"
@@ -54,5 +54,5 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.688" />
+        app:layout_constraintVertical_bias="0.83" />
 </androidx.constraintlayout.widget.ConstraintLayout>
