@@ -3,16 +3,11 @@ package com.example.projectprm392_spring2023;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-
-import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity {
     private Button btnEx;
@@ -44,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //to call another activity
                 Intent i = new Intent();
-                i.setClass(MainActivity.this, HaiTest.class);
+                i.setClass(MainActivity.this, PromptActivity.class);
                 String s = edtData.getText().toString();//send to activity 2
                 i.putExtra("data", s);
 //                i.putExtra("image", R.drawable.test_img);
@@ -88,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 //
 //    public void byExtras(String content) {
-//        Intent intent = new Intent(MainActivity.this, ShowAfterScan.class);
+//        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
 //        intent.putExtra(CONTENT, content);
 //        startActivity(intent);
 //    }

@@ -29,27 +29,35 @@
         </activity>
 
         <activity
-            android:name=".ScanImages"
-            android:exported="false">
+            android:name=".TextDetectionActivity"
+            android:exported="true">
+            <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
         </activity>
         <activity
-            android:name=".HaiTest"
+            android:name=".PromptActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".ShowAfterScan"
-            android:exported="false" />
+            android:name=".ResultActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true" >
+            android:exported="false" >
 
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+<!--        <intent-filter>-->
+<!--            <action android:name="android.intent.action.MAIN" />-->
+<!--            <category android:name="android.intent.category.LAUNCHER" />-->
+<!--        </intent-filter>-->
         </activity>
 
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" />

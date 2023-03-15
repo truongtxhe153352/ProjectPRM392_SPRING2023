@@ -1,19 +1,18 @@
 package com.example.projectprm392_spring2023;
 
-import static android.Manifest.permission_group.CAMERA;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.SparseArray;
@@ -30,20 +29,19 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import android.Manifest;
-public class ScanImages extends AppCompatActivity {
+
+public class TextDetectionActivity extends AppCompatActivity {
     Button btnCapture;
     Button btnGallery;
     TextView txtData;
     ImageView imgView;
     Activity activity;
+    Uri imageUri;
 
-
-    private static final int CAMERA_REQUEST = 10;
     private static final int PERMISSION_CODE = 100;
     private static final int SELECT_IMAGE_CODE = 1;
+    private static final int IMAGE_PICK_CAMERA_CODE = 2001;
 
-
-    Uri uri = null;
 
 
     private void bindingView() {
@@ -51,7 +49,7 @@ public class ScanImages extends AppCompatActivity {
         btnGallery = findViewById(R.id.btnGallery);
         txtData = findViewById(R.id.txtData);
         imgView = findViewById(R.id.imageView);
-        activity = ScanImages.this;
+        activity = TextDetectionActivity.this;
     }
 
     private void bindingAction() {
@@ -59,8 +57,16 @@ public class ScanImages extends AppCompatActivity {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_CODE);
             } else {
+                //intent to take image from camera, it will also be save to storage to get high quality image
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.TITLE, "NewPick"); //title of the picture
+                values.put(MediaStore.Images.Media.DESCRIPTION, "Image To Text"); //title of the picture
+                imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(cameraIntent, IMAGE_PICK_CAMERA_CODE);
+
             }
         });
 
@@ -99,28 +105,75 @@ public class ScanImages extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == CAMERA_REQUEST && resultCode == activity.RESULT_OK) {
-            Bitmap image = (Bitmap) data.getExtras().get("data");
-            imgView.setImageBitmap(image);
-            textFind();
+        if (requestCode == IMAGE_PICK_CAMERA_CODE && resultCode == RESULT_OK) {
+            //got image from camera now crop it
+            CropImage.activity(imageUri)
+                    .setGuidelines(CropImageView.Guidelines.ON) //enable image guid lines
+                    .start(this);
         }
+
+
         if(requestCode == SELECT_IMAGE_CODE && resultCode == Activity.RESULT_OK) {
-            uri = data.getData();
-            CropImage.activity(uri)
+            imageUri = data.getData();
+            CropImage.activity(imageUri)
                     .setGuidelines(CropImageView.Guidelines.ON)
-                    .start(ScanImages.this);
-            if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-                CropImage.ActivityResult result = CropImage.getActivityResult(data);
-                if (resultCode == RESULT_OK) {
-                    uri = result.getUri();
-                    imgView.setImageURI(uri);
-                    textFind();
-                } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                    Exception error = result.getError();
-                }
+                    .start(TextDetectionActivity.this);
+        }
+
+        if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            // Cropped image successfully
+            if (resultCode == RESULT_OK) {
+                // Update imageView
+                imageUri = result.getUri();
+                imgView.setImageURI(imageUri);
+
+                // Start text detection
+                TextDetectionTask textDetectionTask = new TextDetectionTask();
+                textDetectionTask.execute();
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
             }
         }
 
+    }
+
+
+    class TextDetectionTask extends AsyncTask<Void, Void, Void> {
+        String detectedText;
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(TextDetectionActivity.this,
+                    "Text Recognition",
+                    "Detecting...");
+        }
+        @Override
+        protected Void doInBackground(Void... voids) {
+            detectedText = "Here's some detected text";
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            progressDialog.dismiss();
+            startPromptActivity(detectedText);
+        }
+    }
+
+
+
+    private void startPromptActivity(String detectedText) {
+        Intent intent = new Intent(TextDetectionActivity.this, PromptActivity.class);
+        intent.putExtra("imageUri", imageUri.toString());
+        intent.putExtra("detectedText", detectedText);
+        startActivity(intent);
+    }
+
+    private String detectText(Bitmap bitmapImage) {
+        return "Here's some detected text";
     }
 
     public void textFind() {
@@ -144,7 +197,7 @@ public class ScanImages extends AppCompatActivity {
     private void findTextByBitmap(Bitmap bitmap) {
         TextRecognizer textRecognizer = new TextRecognizer.Builder(this).build();
         if (!textRecognizer.isOperational()) {
-            Toast.makeText(ScanImages.this, "Error Occur!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(TextDetectionActivity.this, "Error Occur!", Toast.LENGTH_SHORT).show();
         } else {
             Frame frame = new Frame.Builder().setBitmap(bitmap).build();
             SparseArray<TextBlock> sparseArray = textRecognizer.detect(frame);
@@ -160,3 +213,4 @@ public class ScanImages extends AppCompatActivity {
     }
 
 }
+
