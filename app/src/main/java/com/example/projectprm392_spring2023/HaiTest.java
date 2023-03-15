@@ -79,12 +79,8 @@ public class HaiTest extends AppCompatActivity {
         if (i != null) {
             String data = i.getStringExtra("data");
             edtData2.setText(data);
-            byte[] byteArray = getIntent().getByteArrayExtra("image");
-            if (byteArray != null) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                imageView.setImageBitmap(bitmap);
-            }
-
+            int inputManage=i.getIntExtra("image",1);
+            imageView.setImageResource(inputManage);
         }
     }
 
