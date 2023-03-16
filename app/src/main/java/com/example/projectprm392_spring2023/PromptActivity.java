@@ -7,12 +7,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -32,15 +32,19 @@ import java.net.URL;
 public class PromptActivity extends AppCompatActivity {
     private Button btnSave;
     private TextInputEditText detectedTextEditText;
+    private TextInputEditText customPromptEditText;
     private TextInputLayout customPromptLayout;
     private ImageView imageView;
+    private String currentImageUri;
+
     public static int return_fromActivity1 = 1000;
 
     private void bindingView() {
         btnSave = findViewById(R.id.btnSave);
-        imageView = findViewById(R.id.imageView2);
+        imageView = findViewById(R.id.imagePreview);
         customPromptLayout = findViewById(R.id.customPromptLayout);
         detectedTextEditText = findViewById(R.id.detectedTextEditText);
+        customPromptEditText = findViewById(R.id.customPromptEditText);
     }
 
 
@@ -98,7 +102,10 @@ public class PromptActivity extends AppCompatActivity {
             Toast.makeText(PromptActivity.this, "You must select a prompt before asking ChatGPT!" , Toast.LENGTH_SHORT).show();
             return;
         }
-        String prompt =  '"' + detectedText + '"' + "\n\nPrompt: " + currentPrompt;
+        if (currentPrompt.equalsIgnoreCase("Custom")) {
+            currentPrompt = customPromptEditText.getText().toString();
+        }
+        String prompt = currentPrompt + "\n" + '"' + detectedText +'"';
 
         String secretKey = "thaiduongdeptrai";
         ChatGptRequest chatGptRequest = new ChatGptRequest(prompt, secretKey);
@@ -181,28 +188,27 @@ public class PromptActivity extends AppCompatActivity {
     }
     private void startResultActivity(String response) {
         Intent intent = new Intent(PromptActivity.this, ResultActivity.class);
-//        intent.putExtra("imageUri", imageUri.toString());
-//        intent.putExtra("detectedText", detectedText);
+        intent.putExtra("imageUri", currentImageUri);
+        intent.putExtra("detectedText", detectedTextEditText.getText().toString());
+        intent.putExtra("chatgptResponse", response);
+        intent.putExtra("promptUsed", autoCompleteTxt.getText().toString().equalsIgnoreCase("Custom") ?  customPromptEditText.getText().toString() : autoCompleteTxt.getText().toString());
         startActivity(intent);
     }
 
     private void receivingIntent() {
         Intent i = getIntent();
-        if (i != null && i.getStringExtra("imageUri") != null && i.getStringExtra("detectedText") != null) {
-            imageView.setImageURI(Uri.parse(i.getStringExtra("imageUri")));
-            String data = i.getStringExtra("detectedText");
-            detectedTextEditText.setText(data);
-//            int inputManage=i.getIntExtra("image",1);
-//            imageView.setImageResource(inputManage);
+        if (i != null) {
+            if (i.getStringExtra("detectedText") != null) {
+                String data = i.getStringExtra("detectedText");
+                detectedTextEditText.setText(data);
+            }
+            if (i.getStringExtra("imageUri") != null) {
+                currentImageUri = i.getStringExtra("imageUri");
+                imageView.setImageURI(Uri.parse(i.getStringExtra("imageUri")));
+            }
         }
+
     }
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_get_data_api);
-//        bindingView();
-//        bindingAction();
-//        receivingIntent();
-//    }
+
 }
