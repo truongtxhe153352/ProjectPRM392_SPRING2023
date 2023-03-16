@@ -17,16 +17,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class HistoryDetail extends AppCompatActivity {
 
+    private EditText txtTitleDetail;
     private EditText edt_content;
     private ImageView img_cam_detail;
-    private Button btnBack;
+    private Button btnSave;
     private Button btnCopy;
     private Button btnDelete;
 
     private void BindingView(){
+        txtTitleDetail = findViewById(R.id.txtTitleDetail);
         edt_content = findViewById(R.id.edt_Content);
         img_cam_detail = findViewById(R.id.img_cam_detail);
-        btnBack = findViewById(R.id.btnBack);
+        btnSave  = findViewById(R.id.btn_Save);
         btnCopy = findViewById(R.id.btnCopy);
         btnDelete = findViewById(R.id.btn_Delete);
     }
@@ -36,46 +38,68 @@ public class HistoryDetail extends AppCompatActivity {
             return;
         }
         final History history = (History) bundle.get("object_history");
+        txtTitleDetail.setText(history.getDate());
         edt_content.setText(history.getContent());
         img_cam_detail.setImageResource(history.getResourceId());
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
+        btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent ca = new Intent(getApplicationContext(), HistoryList.class);
-                startActivity(ca);
+                Save(history);
             }
         });
 
         btnCopy.setOnClickListener(view -> {
-            String content = edt_content.getText().toString();
-            if(content.isEmpty()){
-                Toast.makeText(this, "Please enter text", Toast.LENGTH_SHORT).show();
-            }else{
-                ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clipData = ClipData.newPlainText("MyData", content);
-                clipboardManager.setPrimaryClip(clipData);
-                Toast.makeText(this, "Text copied to clipboard", Toast.LENGTH_SHORT).show();
-            }
+            Copy();
         });
 
         btnDelete.setOnClickListener(view -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Confirm delete user")
-                    .setMessage("Are you sure")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            HistoryDatabase.getInstance(HistoryDetail.this).historyDAO().deleteHistory(history);
-                            Toast.makeText(HistoryDetail.this, "Delete successfully", Toast.LENGTH_SHORT).show();
-                            Intent ca = new Intent(getApplicationContext(), HistoryList.class);
-                            startActivity(ca);
-                        }
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+            Delete(history);
 
         });
+
+    }
+    private void Save(History history){
+        String date = txtTitleDetail.getText().toString().trim();
+        String content = edt_content.getText().toString().trim();
+
+        if(date == history.getDate() || content == history.getContent()){
+            return;
+        }
+        history.setDate(date);
+        history.setContent(content);
+
+        HistoryDatabase.getInstance(HistoryDetail.this).historyDAO().updateHistory(history);
+        Toast.makeText(HistoryDetail.this, "Save successfully", Toast.LENGTH_SHORT).show();
+        Intent ca = new Intent(getApplicationContext(), HistoryList.class);
+        startActivity(ca);
+    }
+    private void Copy(){
+        String content = edt_content.getText().toString();
+        if(content.isEmpty()){
+            Toast.makeText(this, "Please enter text", Toast.LENGTH_SHORT).show();
+        }else{
+            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText("MyData", content);
+            clipboardManager.setPrimaryClip(clipData);
+            Toast.makeText(this, "Text copied to clipboard", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void Delete(History history){
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm delete user")
+                .setMessage("Are you sure")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        HistoryDatabase.getInstance(HistoryDetail.this).historyDAO().deleteHistory(history);
+                        Toast.makeText(HistoryDetail.this, "Delete successfully", Toast.LENGTH_SHORT).show();
+                        Intent ca = new Intent(getApplicationContext(), HistoryList.class);
+                        startActivity(ca);
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
 

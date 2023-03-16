@@ -7,8 +7,8 @@
     android:orientation="vertical"
     tools:context=".HistoryDetail">
 
-    <TextView
-        android:id="@+id/textView"
+    <EditText
+        android:id="@+id/txtTitleDetail"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="#D4E157"
@@ -19,7 +19,7 @@
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="510dp"
+        android:layout_height="576dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="12dp"
         app:cardUseCompatPadding="true"
@@ -34,13 +34,13 @@
             <ImageView
                 android:id="@+id/img_cam_detail"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="269dp"
                 app:srcCompat="@drawable/camchatgpt" />
 
             <EditText
                 android:id="@+id/edt_Content"
                 android:layout_width="match_parent"
-                android:layout_height="437dp"
+                android:layout_height="230dp"
                 android:ems="10"
                 android:inputType="textPersonName"
                 android:text="Test 1" />
@@ -54,13 +54,13 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnBack"
+            android:id="@+id/btn_Delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:text="Back" />
+            android:text="Delete" />
 
         <Button
             android:id="@+id/btnCopy"
@@ -72,13 +72,13 @@
             android:text="Copy" />
 
         <Button
-            android:id="@+id/btn_Delete"
+            android:id="@+id/btn_Save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:text="Delete" />
+            android:text="Save" />
     </LinearLayout>
 
 

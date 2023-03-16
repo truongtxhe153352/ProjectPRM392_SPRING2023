@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -15,10 +16,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class HistoryApdapter extends RecyclerView.Adapter<HistoryApdapter.HistoryViewHolder>{
+public class HistoryApdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+
+    private static final int TYPE_HISTORY = 1;
+    private static final int TYPE_LOADING = 2;
 
     private List<History> list;
     Context context;
+    private boolean isLoadingAdd;
+
+    @Override
+    public int getItemViewType(int position) {
+        if(list != null && position == list.size() - 1 &&  isLoadingAdd){
+            return TYPE_LOADING;
+        }
+        return TYPE_HISTORY;
+    }
 
     public HistoryApdapter(List<History> historyList, Context context){
         this.list = historyList;
@@ -27,28 +40,37 @@ public class HistoryApdapter extends RecyclerView.Adapter<HistoryApdapter.Histor
 
     @NonNull
     @Override
-    public HistoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if(TYPE_HISTORY == viewType){
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent, false);
+            return new HistoryViewHolder(view);
+        }else{
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.history_loading, parent, false);
+            return new LoadingViewHolder(view);
+        }
 
-        return new HistoryViewHolder(view);
+
     }
 
     @Override
-    public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
-        History history = list.get(position);
-        if(history == null){
-            return;
-        }
-        holder.img_cam.setImageResource(history.getResourceId());
-        holder.txt_date.setText(history.getDate());
-        holder.btnDetail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickGotoDetail(history);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if(holder.getItemViewType() == TYPE_HISTORY){
+            History history = list.get(position);
+            if(history == null){
+                return;
             }
-        });
-
+            HistoryViewHolder historyViewHolder = (HistoryViewHolder) holder;
+            historyViewHolder.img_cam.setImageResource(history.getResourceId());
+            historyViewHolder.txt_date.setText(history.getDate());
+            historyViewHolder.btnDetail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickGotoDetail(history);
+                }
+            });
+        }
     }
+
 
     private void onClickGotoDetail(History history){
         Intent intent = new Intent(context, HistoryDetail.class);
@@ -82,6 +104,30 @@ public class HistoryApdapter extends RecyclerView.Adapter<HistoryApdapter.Histor
             img_cam = itemView.findViewById(R.id.img_cam);
             txt_date = itemView.findViewById(R.id.txt_date);
             btnDetail = itemView.findViewById(R.id.btnDetail);
+        }
+    }
+    public class LoadingViewHolder extends RecyclerView.ViewHolder{
+        private ProgressBar progressBar;
+
+        public LoadingViewHolder(@NonNull View itemView) {
+            super(itemView);
+            progressBar = itemView.findViewById(R.id.progress_bar);
+        }
+    }
+
+    public void addFooterLoading(){
+        isLoadingAdd = true;
+        list.add(new History(1, R.drawable.camchatgpt, "",""));
+
+    }
+    public void removeFooterLoading(){
+        isLoadingAdd = false;
+        int postion = list.size() - 1;
+        History history = list.get(postion);
+        if(history != null){
+            list.remove(postion);
+            notifyItemRemoved(postion);
+
         }
     }
 
