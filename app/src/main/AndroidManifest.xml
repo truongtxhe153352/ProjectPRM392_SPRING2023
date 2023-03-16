@@ -34,20 +34,20 @@
         <activity
             android:name=".TextDetectionActivity"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
-            android:exported="false">
-<!--            <intent-filter>-->
-<!--                            <action android:name="android.intent.action.MAIN" />-->
-<!--                            <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                        </intent-filter>-->
+            android:exported="true">
+            <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
         </activity>
         <activity
             android:name=".PromptActivity"
             android:windowSoftInputMode="adjustPan"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:exported="false">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

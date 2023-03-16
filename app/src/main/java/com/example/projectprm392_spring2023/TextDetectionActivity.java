@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -15,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -64,6 +67,10 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
     //Permission Code
     private static final int CAMERA_REQUEST_CODE = 200;
     private static final int STORAGE_REQUEST_CODE = 400;
+    private static final int IMAGE_PICK_GALLERY_CODE = 1000;
+
+    String storagePermission[];
+    String cameraPermission[];
 
     private final String credentialString = "{\n" +
             "  \"type\": \"service_account\",\n" +
@@ -92,18 +99,10 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
 
     private void bindingAction() {
         btnCapture.setOnClickListener(v -> {
-            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_CODE);
+            if (!checkCameraPermission()) {
+                requestCameraPermission();
             } else {
-                //intent to take image from camera, it will also be save to storage to get high quality image
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.TITLE, "NewPick"); //title of the picture
-                values.put(MediaStore.Images.Media.DESCRIPTION, "Image To Text"); //title of the picture
-                imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                startActivityForResult(cameraIntent, IMAGE_PICK_CAMERA_CODE);
+                pickCamera();
 
             }
         });
@@ -119,6 +118,90 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
         });
 
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void pickGallery() {
+        //intent to pick image from gallery
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        //set intent type to image
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
+    }
+
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this, storagePermission, STORAGE_REQUEST_CODE);
+    }
+
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("thaiduongme","Permission is granted");
+                return true;
+            } else {
+                Log.v("thaiduongme","Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_REQUEST_CODE);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("thaiduongme","Permission is granted");
+            return true;
+        }
+    }
+
+    private boolean checkStoragePermission() {
+        boolean result = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+        return result;
+    }
+
+    private void pickCamera() {
+        //intent to take image from camera, it will also be save to storage to get high quality image
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "NewPick"); //title of the picture
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Image To Text"); //title of the picture
+        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(cameraIntent, IMAGE_PICK_CAMERA_CODE);
+    }
+
+    //handle permission result
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    boolean cameraAccepted = grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED;
+                    boolean writeStorageAccepted = grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED;
+
+                    if (cameraAccepted && writeStorageAccepted) {
+                        pickCamera();
+                    } else {
+                        Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+
+            case STORAGE_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    boolean writeStorageAccepted = grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED;
+
+                    if (writeStorageAccepted) {
+                        pickGallery();
+                    } else {
+                        Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+        }
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
     }
 
     @Override
@@ -143,6 +226,12 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
         // to make the Navigation drawer icon always appear on the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        //camera permission
+        cameraPermission = new String[] {Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        //storage permission
+        storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     }
 
@@ -152,13 +241,11 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
         switch (item.getItemId()) {
 
             case R.id.nav_new_photo: {
-                Log.d("thaiduongme", "New photo chose");
                 break;
             }
             case R.id.nav_history: {
                 Intent i = new Intent(TextDetectionActivity.this, HistoryList.class);
                 startActivity(i);
-                Log.d("thaiduongme", "New history chose");
             }
         }
         //close navigation drawer
@@ -171,18 +258,6 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(activity, "Granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(activity, "Not Granted", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -308,42 +383,20 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
         startActivity(intent);
     }
 
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this, cameraPermission, CAMERA_REQUEST_CODE);
+    }
 
-//    public void textFind() {
-//        TextRecognizer textRecognizer = new TextRecognizer.Builder(activity).build();
-//        Bitmap bitmap = ((BitmapDrawable) imgView.getDrawable()).getBitmap();
-//
-//        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-//        SparseArray<TextBlock> sparseArray = textRecognizer.detect(frame);
-//
-//        StringBuilder stringBuilder = new StringBuilder();
-//
-//        for (int i = 0; i < sparseArray.size(); i++) {
-//            TextBlock textBlock = sparseArray.get(i);
-//            String str = textBlock.getValue();
-//            stringBuilder.append(str);
-//        }
-//        txtData.setText(stringBuilder);
-//    }
+    private boolean checkCameraPermission() {
+        boolean result = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
+
+        boolean result1 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+        return result && result1;
+    }
 
 
-//    private void findTextByBitmap(Bitmap bitmap) {
-//        TextRecognizer textRecognizer = new TextRecognizer.Builder(this).build();
-//        if (!textRecognizer.isOperational()) {
-//            Toast.makeText(TextDetectionActivity.this, "Error Occur!", Toast.LENGTH_SHORT).show();
-//        } else {
-//            Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-//            SparseArray<TextBlock> sparseArray = textRecognizer.detect(frame);
-//            StringBuilder stringBuilder = new StringBuilder();
-//
-//            for (int i = 0; i < sparseArray.size(); i++) {
-//                TextBlock textBlock = sparseArray.valueAt(i);
-//                stringBuilder.append(textBlock.getValue());
-//                stringBuilder.append("\n");
-//            }
-//            txtData.setText(stringBuilder.toString());
-//        }
-//    }
 
 }
 
