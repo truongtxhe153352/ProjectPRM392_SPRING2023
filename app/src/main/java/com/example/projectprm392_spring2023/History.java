@@ -5,21 +5,35 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity(tableName = "history")
 
 public class History implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private int resourceId;
-    private String date;
-    private String content;
 
-    public History(int id, int resourceId, String date, String content) {
-        this.id = id;
-        this.resourceId = resourceId;
-        this.date = date;
-        this.content = content;
+    private String chatgptResponse;
+
+    private String promptUsed;
+
+    private String imageUri;
+
+    private String title;
+
+    public History(String chatgptResponse, String promptUsed, String imageUri, String title) {
+        this.chatgptResponse = chatgptResponse;
+        this.promptUsed = promptUsed;
+        this.imageUri = imageUri;
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public int getId() {
@@ -30,27 +44,27 @@ public class History implements Serializable {
         this.id = id;
     }
 
-    public int getResourceId() {
-        return resourceId;
+    public String getChatgptResponse() {
+        return chatgptResponse;
     }
 
-    public void setResourceId(int resourceId) {
-        this.resourceId = resourceId;
+    public void setChatgptResponse(String chatgptResponse) {
+        this.chatgptResponse = chatgptResponse;
     }
 
-    public String getDate() {
-        return date;
+    public String getPromptUsed() {
+        return promptUsed;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setPromptUsed(String promptUsed) {
+        this.promptUsed = promptUsed;
     }
 
-    public String getContent() {
-        return content;
+    public String getImageUri() {
+        return imageUri;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setImageUri(String imageUri) {
+        this.imageUri = imageUri;
     }
 }

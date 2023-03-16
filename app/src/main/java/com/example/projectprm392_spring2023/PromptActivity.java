@@ -49,8 +49,8 @@ public class PromptActivity extends AppCompatActivity implements NavigationView.
     NavigationView navigationView;
 
     private void bindingView() {
-        btnSave = findViewById(R.id.btnSave);
-        imageView = findViewById(R.id.imagePreview);
+        btnSave = findViewById(R.id.btnCopy);
+        imageView = findViewById(R.id.img_cam_detail);
         customPromptLayout = findViewById(R.id.customPromptLayout);
         detectedTextEditText = findViewById(R.id.detectedTextEditText);
         customPromptEditText = findViewById(R.id.customPromptEditText);

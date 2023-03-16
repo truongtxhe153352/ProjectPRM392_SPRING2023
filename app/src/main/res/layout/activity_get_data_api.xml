@@ -62,7 +62,7 @@
             android:padding="15dp">
 
             <ImageView
-                android:id="@+id/imagePreview"
+                android:id="@+id/img_cam_detail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:srcCompat="@drawable/homepage"
@@ -82,7 +82,7 @@
     </RelativeLayout>
 
     <Button
-        android:id="@+id/btnSave"
+        android:id="@+id/btnCopy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
