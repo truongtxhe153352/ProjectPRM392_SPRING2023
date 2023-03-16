@@ -15,6 +15,7 @@
     android:layout_height="match_parent"
     tools:context=".PromptActivity">
 
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout2"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -148,7 +149,6 @@
             app:layout_constraintStart_toStartOf="parent"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent">
-
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/customPromptEditText"
                 android:layout_width="match_parent"

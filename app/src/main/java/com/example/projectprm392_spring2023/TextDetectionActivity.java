@@ -61,6 +61,10 @@ public class TextDetectionActivity extends AppCompatActivity implements Navigati
     private static final int SELECT_IMAGE_CODE = 1;
     private static final int IMAGE_PICK_CAMERA_CODE = 2001;
 
+    //Permission Code
+    private static final int CAMERA_REQUEST_CODE = 200;
+    private static final int STORAGE_REQUEST_CODE = 400;
+
     private final String credentialString = "{\n" +
             "  \"type\": \"service_account\",\n" +
             "  \"project_id\": \"infra-edge-377903\",\n" +
