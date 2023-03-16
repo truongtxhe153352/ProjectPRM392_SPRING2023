@@ -110,11 +110,7 @@ public class TextDetectionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_text_detection);
         bindingView();
         bindingAction();
-        try {
-            prepareTextDetection();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     @Override
@@ -223,6 +219,11 @@ public class TextDetectionActivity extends AppCompatActivity {
         }
         @Override
         protected Void doInBackground(Bitmap... bitmaps) {
+            try {
+                prepareTextDetection();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             detectedText = detectText(bitmaps[0]);
             return null;
         }
