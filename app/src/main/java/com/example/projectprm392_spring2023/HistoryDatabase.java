@@ -5,14 +5,14 @@ import androidx.room.RoomDatabase;
 import android.content.Context;
 import androidx.room.Room;
 
-    @Database(entities = {History.class}, version = 1)
+    @Database(entities = {History.class}, version = 3)
     public abstract class HistoryDatabase extends RoomDatabase {
         private static final String DATABASE_NAME = "history.db";
         private static HistoryDatabase instance;
 
         public static synchronized HistoryDatabase getInstance(Context context){
             if(instance == null){
-                instance = Room.databaseBuilder(context.getApplicationContext(), HistoryDatabase.class, DATABASE_NAME)
+                instance = Room.databaseBuilder(context.getApplicationContext(), HistoryDatabase.class, DATABASE_NAME).fallbackToDestructiveMigration()
                         .allowMainThreadQueries()
                         .build();
             }

@@ -7,9 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:ignore="HardcodedText">
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -29,7 +27,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/chatgptResponseEditText"
+            android:id="@+id/edt_Content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="top"
@@ -59,7 +57,7 @@
             android:padding="15dp">
 
             <ImageView
-                android:id="@+id/imagePreview"
+                android:id="@+id/img_cam_detail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:srcCompat="@drawable/homepage"
@@ -110,18 +108,18 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/btnSave"
+        android:id="@+id/btnCopy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/primary"
         android:fontFamily="@font/montserrat_bold"
-        android:maxWidth="300dp"
-        android:minWidth="200dp"
+        android:maxWidth="260dp"
+        android:minWidth="260dp"
         android:paddingLeft="50dp"
-        android:paddingTop="15dp"
+        android:paddingTop="10dp"
         android:paddingRight="50dp"
-        android:paddingBottom="15dp"
+        android:paddingBottom="10dp"
         android:text="Save"
         android:textAllCaps="false"
         app:cornerRadius="10dp"
@@ -131,13 +129,13 @@
         app:layout_constraintTop_toBottomOf="@+id/promptUsedTextInputLayout" />
 
     <Button
-        android:id="@+id/btnAnotherPhoto"
+        android:id="@+id/btn_Delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/secondary"
         android:fontFamily="@font/montserrat_bold"
-        android:maxWidth="200dp"
-        android:minWidth="200dp"
+        android:maxWidth="260dp"
+        android:minWidth="260dp"
         android:paddingLeft="50dp"
         android:paddingTop="10dp"
         android:paddingRight="50dp"
@@ -148,7 +146,7 @@
         app:cornerRadius="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSave" />
+        app:layout_constraintTop_toBottomOf="@+id/btnCopy" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
     <com.google.android.material.navigation.NavigationView
