@@ -25,13 +25,10 @@ public class ResultActivity extends AppCompatActivity {
 
     private EditText edtCustom;
 
-//    public ResultActivity() {
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("thaiduongme", "bo may chay vao day roi ma!");
         setContentView(R.layout.activity_get_data_api);
 
 //        tvContent = (TextView) findViewById(R.id.tv_content);

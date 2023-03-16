@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -29,18 +31,20 @@ import java.net.URL;
 
 public class PromptActivity extends AppCompatActivity {
     private Button btnSave;
-    private EditText edtData2;
+    private TextInputEditText detectedTextEditText;
+    private TextInputLayout customPromptLayout;
     private ImageView imageView;
     public static int return_fromActivity1 = 1000;
 
     private void bindingView() {
         btnSave = findViewById(R.id.btnSave);
-        edtData2 = findViewById(R.id.edtData2);
         imageView = findViewById(R.id.imageView2);
+        customPromptLayout = findViewById(R.id.customPromptLayout);
+        detectedTextEditText = findViewById(R.id.detectedTextEditText);
     }
 
 
-    String[] items = {"Summary", "Give the answer", "Rewrite the passage", "Custom"};
+    String[] items = {"Summarize", "Give me the answer", "Paraphrase", "Give me some important keywords", "Custom"};
 
     AutoCompleteTextView autoCompleteTxt;
 
@@ -66,7 +70,11 @@ public class PromptActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String item = parent.getItemAtPosition(position).toString();
-                Toast.makeText(getApplicationContext(), "Item: " + item, Toast.LENGTH_SHORT).show();
+                if (item == "Custom") {
+                    customPromptLayout.setVisibility(View.VISIBLE);
+                } else {
+                    customPromptLayout.setVisibility(View.GONE);
+                }
             }
         });
     }
@@ -77,23 +85,27 @@ public class PromptActivity extends AppCompatActivity {
     }
 
     private void onBtnSaveClick(View view) {
-        // Todo: Get current detected text
-        // Todo: Get current prompt
-        // Todo: Generate a new prompt
+        // Get current detected text
+        String detectedText= detectedTextEditText.getText().toString();
+        if (detectedText.isEmpty()) {
+            Toast.makeText(PromptActivity.this, "Detected text is empty!" , Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Fake data
-        String prompt = "hello world";
+        // Get current prompt
+        String currentPrompt = autoCompleteTxt.getText().toString();
+        if (currentPrompt.isEmpty()) {
+            Toast.makeText(PromptActivity.this, "You must select a prompt before asking ChatGPT!" , Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String prompt =  '"' + detectedText + '"' + "\n\nPrompt: " + currentPrompt;
+
         String secretKey = "thaiduongdeptrai";
         ChatGptRequest chatGptRequest = new ChatGptRequest(prompt, secretKey);
 
         AskChatGptTask askChatGptTask = new AskChatGptTask();
         askChatGptTask.execute(chatGptRequest);
 
-        String result = edtData2.getText().toString();
-        Intent i = new Intent();
-        i.putExtra("result", result);
-        setResult(8, i);
-        finish();
     }
     class AskChatGptTask extends AsyncTask<ChatGptRequest, Void, ChatGptResponse> {
         private static final String API_ENDPOINT = "http://54.169.182.6:3000/conversation";
@@ -158,7 +170,11 @@ public class PromptActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ChatGptResponse chatGptResponse) {
             progressDialog.dismiss();
-            Toast.makeText(PromptActivity.this, chatGptResponse.getResponse(), Toast.LENGTH_SHORT).show();
+            if (chatGptResponse.getResponse() == null) {
+                Toast.makeText(PromptActivity.this, "Something went wrong, couldn't receive any response from ChatGPT!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+//            Toast.makeText(PromptActivity.this, chatGptResponse.getResponse(), Toast.LENGTH_SHORT).show();
             super.onPostExecute(chatGptResponse);
             startResultActivity(chatGptResponse.getResponse());
         }
@@ -172,11 +188,11 @@ public class PromptActivity extends AppCompatActivity {
 
     private void receivingIntent() {
         Intent i = getIntent();
-        if (i != null) {
+        if (i != null && i.getStringExtra("imageUri") != null && i.getStringExtra("detectedText") != null) {
             imageView.setImageURI(Uri.parse(i.getStringExtra("imageUri")));
             String data = i.getStringExtra("detectedText");
-            edtData2.setText(data);
-            int inputManage=i.getIntExtra("image",1);
+            detectedTextEditText.setText(data);
+//            int inputManage=i.getIntExtra("image",1);
 //            imageView.setImageResource(inputManage);
         }
     }
