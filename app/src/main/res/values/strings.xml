@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">ProjectPRM392_SPRING2023</string>
-    <string name="select">Select Item</string>
+    <string name="app_name">CamGPT</string>
+    <string name="select">Select Prompt</string>
+    <!-- to toggle the open close button of the navigation drawer -->
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
 </resources>
