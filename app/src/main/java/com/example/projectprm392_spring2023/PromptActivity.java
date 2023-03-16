@@ -1,6 +1,10 @@
 package com.example.projectprm392_spring2023;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -8,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
@@ -29,7 +35,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class PromptActivity extends AppCompatActivity {
+public class PromptActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Button btnSave;
     private TextInputEditText detectedTextEditText;
     private TextInputEditText customPromptEditText;
@@ -38,6 +44,9 @@ public class PromptActivity extends AppCompatActivity {
     private String currentImageUri;
 
     public static int return_fromActivity1 = 1000;
+    public DrawerLayout drawerLayout;
+    public ActionBarDrawerToggle actionBarDrawerToggle;
+    NavigationView navigationView;
 
     private void bindingView() {
         btnSave = findViewById(R.id.btnSave);
@@ -45,6 +54,7 @@ public class PromptActivity extends AppCompatActivity {
         customPromptLayout = findViewById(R.id.customPromptLayout);
         detectedTextEditText = findViewById(R.id.detectedTextEditText);
         customPromptEditText = findViewById(R.id.customPromptEditText);
+        navigationView =  findViewById(R.id.nav_view);
     }
 
 
@@ -81,6 +91,50 @@ public class PromptActivity extends AppCompatActivity {
                 }
             }
         });
+
+        navigationView.setNavigationItemSelectedListener(this);
+        // Sidebar menu
+        // drawer layout instance to toggle the menu icon to open
+        // drawer and back button to close drawer
+        drawerLayout = findViewById(R.id.my_drawer_layout);
+        drawerLayout.bringToFront();
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
+
+        // pass the Open and Close toggle for the drawer layout listener
+        // to toggle the button
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+
+        // to make the Navigation drawer icon always appear on the action bar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        switch (item.getItemId()) {
+            case R.id.nav_new_photo: {
+                Intent i = new Intent(PromptActivity.this, TextDetectionActivity.class);
+                startActivity(i);
+                Log.d("thaiduongme", "New photo chose");
+                break;
+            }
+            case R.id.nav_history: {
+                Intent i = new Intent(PromptActivity.this, HistoryList.class);
+                startActivity(i);
+                Log.d("thaiduongme", "New history chose");
+            }
+        }
+        //close navigation drawer
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

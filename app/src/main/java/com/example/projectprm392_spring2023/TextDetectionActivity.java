@@ -2,7 +2,10 @@ package com.example.projectprm392_spring2023;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -14,11 +17,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
@@ -40,12 +46,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextDetectionActivity extends AppCompatActivity {
+public class TextDetectionActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     Button btnCapture;
     Button btnGallery;
     ImageView imgView;
     Activity activity;
     Uri imageUri;
+
+    public DrawerLayout drawerLayout;
+    public ActionBarDrawerToggle actionBarDrawerToggle;
+    NavigationView navigationView;
 
     private static final int PERMISSION_CODE = 100;
     private static final int SELECT_IMAGE_CODE = 1;
@@ -73,6 +83,7 @@ public class TextDetectionActivity extends AppCompatActivity {
         btnGallery = findViewById(R.id.btnGallery);
         imgView = findViewById(R.id.imageView);
         activity = TextDetectionActivity.this;
+        navigationView =  findViewById(R.id.nav_view);
     }
 
     private void bindingAction() {
@@ -102,6 +113,8 @@ public class TextDetectionActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(intent, "Title"), SELECT_IMAGE_CODE);
             }
         });
+
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -111,6 +124,49 @@ public class TextDetectionActivity extends AppCompatActivity {
         bindingView();
         bindingAction();
 
+        // Sidebar menu
+        // drawer layout instance to toggle the menu icon to open
+        // drawer and back button to close drawer
+        drawerLayout = findViewById(R.id.my_drawer_layout);
+        drawerLayout.bringToFront();
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
+
+        // pass the Open and Close toggle for the drawer layout listener
+        // to toggle the button
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+
+        // to make the Navigation drawer icon always appear on the action bar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        switch (item.getItemId()) {
+
+            case R.id.nav_new_photo: {
+                Log.d("thaiduongme", "New photo chose");
+                break;
+            }
+            case R.id.nav_history: {
+                Intent i = new Intent(TextDetectionActivity.this, HistoryList.class);
+                startActivity(i);
+                Log.d("thaiduongme", "New history chose");
+            }
+        }
+        //close navigation drawer
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
