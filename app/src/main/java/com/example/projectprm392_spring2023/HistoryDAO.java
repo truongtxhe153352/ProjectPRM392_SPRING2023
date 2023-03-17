@@ -19,7 +19,7 @@ public interface HistoryDAO {
     @Delete
     void deleteHistory(History history);
 
-    @Query("SELECT * FROM history WHERE :title LIKE '%' || chatgptResponse || '%' OR :title LIKE '%' || chatgptResponse || '%'")
+    @Query("SELECT * FROM history WHERE title LIKE '%' || :title || '%' OR title LIKE '%' || :title || '%'")
     List<History> searchHistory(String title);
 
     @Update
